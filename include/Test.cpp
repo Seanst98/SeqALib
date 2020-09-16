@@ -247,14 +247,18 @@ int main(int argc, char **argv)
     std::cout << strings.size() << std::endl;
     double maxScore = 0.0;
     int index = 0;
+    uint32_t nHashes = 200;
+
 
     auto t27 = std::chrono::high_resolution_clock::now();
 
-    std::vector<uint32_t> shingleHashesSeq1 = searchStrategy.generateShinglesSingleHashPipelineTurbo<5>(myString);
+    std::vector<uint32_t> shingleHashesSeq1(nHashes);
+    std::vector<uint32_t> shingleHashesSeq2(nHashes);
+    searchStrategy.generateShinglesSingleHashPipelineTurbo<5>(myString, nHashes, shingleHashesSeq1);
 
     for (int i = 0; i < strings.size(); i++)
     {
-        std::vector<uint32_t> shingleHashesSeq2 = searchStrategy.generateShinglesSingleHashPipelineTurbo<5>(strings[i]);
+        searchStrategy.generateShinglesSingleHashPipelineTurbo<5>(strings[i], nHashes, shingleHashesSeq2);
         double temp = searchStrategy.JaccardSingleHashFast(shingleHashesSeq1, shingleHashesSeq2, 0.8);
 
         if (temp > maxScore)
@@ -280,10 +284,15 @@ int main(int argc, char **argv)
     std::cout << std::endl;
 
 
+
+
+
+
     std::cout << "# Pre-Computation For LSH: " << std::endl;
 
     struct LSH {
-        std::vector<std::unordered_map<uint32_t, std::string*>> bands;
+        //std::vector<std::unordered_map<uint32_t, std::string*>> bands;
+        std::vector<tsl::robin_map<uint32_t, std::string*>> bands;
     }lsh;
 
     auto t29 = std::chrono::high_resolution_clock::now();
@@ -293,12 +302,16 @@ int main(int argc, char **argv)
 
     lsh.bands.resize(bands);
 
+    std::vector<uint32_t> bandHashes(bands);
+    std::vector<uint32_t> shingleHashes(nHashes);
+
+
 
     // For each string
     for (int i = 0; i < strings.size(); i++)
     {
-        std::vector<uint32_t> shingleHashes = searchStrategy.generateShinglesSingleHashPipelineTurbo<5>(strings[i]);
-        std::vector<uint32_t> bandHashes = searchStrategy.generateBands(shingleHashes, rows, bands, 0.8);
+        searchStrategy.generateShinglesSingleHashPipelineTurbo<5>(strings[i], nHashes, shingleHashes);
+        searchStrategy.generateBands(shingleHashes, rows, bands, bandHashes);
 
         for (int j = 0; j < bands; j++)
         {
@@ -310,6 +323,8 @@ int main(int argc, char **argv)
     auto t30 = std::chrono::high_resolution_clock::now();
     duration = std::chrono::duration_cast<std::chrono::microseconds>(t30 - t29).count();
     std::cout << "Time Taken: " << duration << " microseconds" << std::endl;
+
+    std::cout << std::endl;
 
 
 
@@ -325,17 +340,23 @@ int main(int argc, char **argv)
 
     auto t31 = std::chrono::high_resolution_clock::now();
 
-    std::vector<uint32_t> myStringHashes = searchStrategy.generateShinglesSingleHashPipelineTurbo<5>(myString);
-    std::vector<uint32_t> myStringBands = searchStrategy.generateBands(myStringHashes, rows, bands, 0.8);
+    std::vector<uint32_t> myStringHashes; myStringHashes.resize(nHashes);
+    searchStrategy.generateShinglesSingleHashPipelineTurbo<5>(myString, nHashes, myStringHashes);
+
+    std::vector<uint32_t> myStringBands; myStringBands.resize(bands);
+    searchStrategy.generateBands(myStringHashes, rows, bands, myStringBands);
+
+    std::vector<uint32_t> foundStrHashes; foundStrHashes.resize(nHashes);
 
     for (int i = 0; i < bands; i++)
     {
         if (lsh.bands[i].count(myStringBands[i]) > 0)
         {
             // We have a match so find it and record similarity
+            //std::cout << "FOUND A MATCH" << std::endl;
             std::string foundStr = *lsh.bands[i].at(myStringBands[i]);
 
-            std::vector<uint32_t> foundStrHashes = searchStrategy.generateShinglesSingleHashPipelineTurbo<5>(foundStr);
+            searchStrategy.generateShinglesSingleHashPipelineTurbo<5>(foundStr, nHashes, foundStrHashes);
 
             double temp = searchStrategy.JaccardSingleHashFast(myStringHashes, foundStrHashes, 0.8);
 

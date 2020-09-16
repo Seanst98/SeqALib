@@ -352,4 +352,10 @@ public:
 #include "SABLAT.h"
 #include "SAMummer.h"
 #include "MSAProgressiveNW.h"
+
+#include "tsl/robin_growth_policy.h"
+#include "tsl/robin_hash.h"
+#include "tsl/robin_map.h"
+#include "tsl/robin_set.h"
+
 #include "SearchStrategy.h"
