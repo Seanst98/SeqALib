@@ -1,6 +1,7 @@
 #include <functional>
 #include <algorithm>
 #include <unordered_set>
+#include <random>
 
 template <typename ContainerType, typename Ty = typename ContainerType::value_type, Ty Blank = Ty(0), typename MatchFnTy = std::function<bool(Ty, Ty)>>
 class SearchStrategy
@@ -56,8 +57,8 @@ public:
 
             for (int k = 0; k < K; k++)
             {
-                pipeline[k] = pipeline[k] ^ Seq[i];
-                pipeline[k] = pipeline[k] * 1099511628211;
+                pipeline[k] ^= Seq[i];
+                pipeline[k] *= 1099511628211;
             }
 
             //Collect head of pipeline
@@ -87,6 +88,7 @@ public:
         int len = Seq.size();
 
         std::unordered_set<uint32_t> set;
+        //set.reserve(nHashes);
         uint32_t last = 0;
 
 
@@ -96,8 +98,8 @@ public:
 
             for (int k = 0; k < K; k++)
             {
-                pipeline[k] = pipeline[k] ^ Seq[i];
-                pipeline[k] = pipeline[k] * 1099511628211;
+                pipeline[k] ^= Seq[i];
+                pipeline[k] *= 1099511628211;
             }
 
             //Collect head of pipeline
@@ -132,6 +134,86 @@ public:
             pipeline[K - 1] = 2166136261;
         }
 
+        return ret;
+    }
+
+    template<uint32_t K>
+    std::vector<uint32_t>& generateShinglesMultipleHashPipelineTurbo(const ContainerType& Seq, uint32_t nHashes, std::vector<uint32_t>& ret, std::vector<uint32_t>& ranHash)
+    {
+        uint32_t pipeline[K] = { 0 };
+        int len = Seq.size();
+
+        uint32_t smallest = std::numeric_limits<uint32_t>::max();
+
+        std::vector<uint32_t> shingleHashes(len);
+
+        // Pipeline to hash all shingles using fnv1a
+        // Store all hashes
+        // While storing smallest
+        // Then for each shingle hash, rehash with an XOR of 32 bit random number and store smallest
+        // Do this nHashes-1 times to obtain nHashes minHashes quickly
+        // Sort the hashes at the end
+
+        for (int i = 0; i < len; i++)
+        {
+            for (int k = 0; k < K; k++)
+            {
+                pipeline[k] ^= Seq[i];
+                pipeline[k] *= 1099511628211;
+            }
+
+            //Collect head of pipeline
+            if (pipeline[0] < smallest)
+            {
+                smallest = pipeline[0];
+            }
+            shingleHashes[i] = pipeline[0];
+
+            //Shift pipeline
+            for (int k = 0; k < K - 1; k++)
+            {
+                pipeline[k] = pipeline[k + 1];
+            }
+            pipeline[K - 1] = 2166136261;
+        }
+
+        ret[0] = smallest;
+
+        // Now for each hash function, rehash each shingle and store the smallest each time
+        for (int i = 0; i < ranHash.size(); i++)
+        {
+            smallest = std::numeric_limits<uint32_t>::max();
+
+            for (int j = 0; j < shingleHashes.size(); j++)
+            {
+                uint32_t temp = shingleHashes[j] ^ ranHash[i];
+                
+                if (temp < smallest)
+                {
+                    smallest = temp;
+                }
+            }
+
+            ret[i+1] = smallest;
+        }
+
+        std::sort(ret.begin(), ret.end());
+
+        return ret;
+    }
+
+    constexpr std::vector<uint32_t>& generateRandomHashFunctions(int num, std::vector<uint32_t>& ret)
+    {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+
+        std::uniform_real_distribution<> distribution(0, std::numeric_limits<uint32_t>::max());
+
+        //generating a random integer:
+        for (int i = 0; i < num; i++)
+        {
+            ret[i] = distribution(gen);
+        }
         return ret;
     }
 
@@ -290,7 +372,5 @@ public:
         int nunion = len1 + len2 - nintersect;
         return nintersect / (double)nunion;
     }
-
-
 
 };
