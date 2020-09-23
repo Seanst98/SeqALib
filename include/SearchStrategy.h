@@ -104,7 +104,7 @@ public:
         return ret;
     }
 
-    /*template<uint32_t K>
+    template<uint32_t K>
     std::vector<uint32_t>& generateShinglesMultipleHashPipelineTurbo(const ContainerType& Seq, uint32_t nHashes, std::vector<uint32_t>& ret, std::vector<uint32_t>& ranHash)
     {
         uint32_t pipeline[K] = { 0 };
@@ -167,9 +167,9 @@ public:
         std::sort(ret.begin(), ret.end());
 
         return ret;
-    }*/
+    }
 
-    template<uint32_t K>
+    /*template<uint32_t K>
     std::vector<uint32_t>& generateShinglesMultipleHashPipelineTurbo(const ContainerType& Seq, uint32_t nHashes, std::vector<uint32_t>& ret, std::vector<uint32_t>& ranHash)
     {
         uint32_t pipeline[K] = { 0 };
@@ -252,16 +252,11 @@ public:
             delete pool[i];
         }
 
-        // Print results
-        /*for (int i = 0; i < size; ++i) {
-            std::cout << ret[i] << "\n";
-        }*/
-
 
         std::sort(ret.begin(), ret.end());
 
         return ret;
-    }
+    }*/
 
     constexpr std::vector<uint32_t>& generateRandomHashFunctions(int num, std::vector<uint32_t>& ret)
     {

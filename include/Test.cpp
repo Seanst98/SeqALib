@@ -256,23 +256,77 @@ int main(int argc, char **argv)
     searchStrategy.generateRandomHashFunctions(nHashes - 1, randomHashFuncs);
 
     std::vector<uint32_t> shingleHashesSeq1(nHashes);
-    std::vector<uint32_t> shingleHashesSeq2(nHashes);
+    //std::vector<uint32_t> shingleHashesSeq2(nHashes);
     searchStrategy.generateShinglesMultipleHashPipelineTurbo<3>(myString, nHashes, shingleHashesSeq1, randomHashFuncs);
-
+    /*
     for (int i = 0; i < strings.size(); i++)
     {
 
         searchStrategy.generateShinglesMultipleHashPipelineTurbo<3>(strings[i], nHashes, shingleHashesSeq2, randomHashFuncs);
         double temp = searchStrategy.JaccardSingleHashFast(shingleHashesSeq1, shingleHashesSeq2, 0.5);
 
-        std::cout << i << std::endl;
+        //std::cout << i << std::endl;
 
         if (temp > maxScore)
         {
             maxScore = temp;
             index = i;
         }
+    }*/
+
+
+    constexpr size_t numThreads = 16;
+    size_t dataChunk = strings.size() / numThreads;
+
+
+    uint32_t max_nums[numThreads] = { 0 };
+    uint32_t max_index[numThreads] = { 0 };
+
+
+    // Declare thread pool
+    std::thread* pool[numThreads];
+
+    // Declare each threads entry function
+    auto calcSimilarity = [&](size_t offset) -> void {
+        //For this threads set of strings
+        for (size_t i = offset; i < offset + dataChunk; ++i)
+        {
+            //std::cout << i << std::endl;
+            std::vector<uint32_t> shingleHashesSeq2(nHashes);
+            searchStrategy.generateShinglesMultipleHashPipelineTurbo<3>(strings[i], nHashes, shingleHashesSeq2, randomHashFuncs);
+            double temp = searchStrategy.JaccardSingleHashFast(shingleHashesSeq1, shingleHashesSeq2, 0.8);
+
+            int index = offset / dataChunk;
+            if (temp > max_nums[index])
+            {
+                max_nums[index] = temp;
+                max_index[index] = i;
+            }
+        }
+    };
+
+    // Spawn all threads, passing (i * dataChunk) as first parameter
+    for (int i = 0; i < numThreads; ++i) {
+        pool[i] = new std::thread(calcSimilarity, i * dataChunk);
     }
+
+    // Wait for all threads to finish execution and delete them
+    for (int i = 0; i < numThreads; ++i) {
+        pool[i]->join();
+        delete pool[i];
+    }
+
+    for (int i = 0; i < numThreads; i++)
+    {
+        if (max_nums[i] > maxScore)
+        {
+            maxScore = max_nums[i];
+            index = max_index[i];
+        }
+    }
+
+
+
 
     auto t28 = std::chrono::high_resolution_clock::now();
     
