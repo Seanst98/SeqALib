@@ -236,8 +236,8 @@ int main(int argc, char **argv)
     std::vector<std::string> strings;
 
     std::string str;
-    std::string myString = "gunMXMmwikiuptglaoKhyIBySaaFcTCHqZjOCpKaQRXDBkeNVrZChMbZnDHtPIHlICZyMiBsyYEZFwdNkSpnQsinVsunWjBmXWMgBxJcZSkxTNTQgqJpsRSMlrTKiCJeTWpsNRrzdJGBmLQuZKbidfrGKPStCbmzhcbVfrrsSWMrjCGUwpdVpljqIHlTYaRKfnHnzzBlSumsiwvLEdMrcLiqmEmsVWRzTvmrnseYGQQQUVornHlBWNBzfafZvtJYVsxaZbVfskwCkdSToGAVnVPcZoyOxWrWgABNdjXpEXqTNVDQcMmyqjcoxeftUHJGhYuuZRzeZLBeIcEBKHhcspZzIbqVvnvZkbZIJZldvmFqRBQpPuPuTwFrjNWoJSJIfsjwtHSHwlQnOmGlqfYsArgwJxRuzjaWQeFfFfFYNsrdiUBkCFTQQCdmDALEoskNxTqOwrGHXUkPOvYPQPRiEYWwApRYgMNVPcEMMzEycjxmSBzcvBDNCmruxQlKYNRhOZaKEPqZacklcmlFxdTjRMqSrMafrIfGdZczMHtZCfyIsmNsjNnLESkyMzKszAlEGUPdUXmhFBJNkZDTVHxNDzjuyCqLFkdGDEqSMPjOpjSuRRZXffwlCbBRWgPQFvjKXhnPvofyiXwkRWMEQnWfTmObJtEcGuUkvQhFjQoegSokXDdYHKdTUHjhQGHyecmRYUvkOMbuHaUGWSjRqItuNBiQvdCElaqKFTkkXXYhxTLggbeeBPLOjRpNHFcLLUFDpJxXzJxfAyrEBnyOQLGcNSDrtyjRqNavnRLJYDJPMolpwxjxvLBqgcxHfDNBqikbSNzYWhsJjItvXetOOqVSgNlqiUyHuuKRoyxiCJuUddzfkaJajgRXILqsxPHBcagyaZldBggcRtcSqLNbrqUsQqRAxzdZPzpwVglSyhcMBmJatUxNIZlsqRBsBfvFzFRzJauycIrmoTdejQrbvWiVxiDZUJAyhJxPTXMLvcZo";
-
+    //std::string myString = "gunMXMmwikiuptglaoKhyIBySaaFcTCHqZjOCpKaQRXDBkeNVrZChMbZnDHtPIHlICZyMiBsyYEZFwdNkSpnQsinVsunWjBmXWMgBxJcZSkxTNTQgqJpsRSMlrTKiCJeTWpsNRrzdJGBmLQuZKbidfrGKPStCbmzhcbVfrrsSWMrjCGUwpdVpljqIHlTYaRKfnHnzzBlSumsiwvLEdMrcLiqmEmsVWRzTvmrnseYGQQQUVornHlBWNBzfafZvtJYVsxaZbVfskwCkdSToGAVnVPcZoyOxWrWgABNdjXpEXqTNVDQcMmyqjcoxeftUHJGhYuuZRzeZLBeIcEBKHhcspZzIbqVvnvZkbZIJZldvmFqRBQpPuPuTwFrjNWoJSJIfsjwtHSHwlQnOmGlqfYsArgwJxRuzjaWQeFfFfFYNsrdiUBkCFTQQCdmDALEoskNxTqOwrGHXUkPOvYPQPRiEYWwApRYgMNVPcEMMzEycjxmSBzcvBDNCmruxQlKYNRhOZaKEPqZacklcmlFxdTjRMqSrMafrIfGdZczMHtZCfyIsmNsjNnLESkyMzKszAlEGUPdUXmhFBJNkZDTVHxNDzjuyCqLFkdGDEqSMPjOpjSuRRZXffwlCbBRWgPQFvjKXhnPvofyiXwkRWMEQnWfTmObJtEcGuUkvQhFjQoegSokXDdYHKdTUHjhQGHyecmRYUvkOMbuHaUGWSjRqItuNBiQvdCElaqKFTkkXXYhxTLggbeeBPLOjRpNHFcLLUFDpJxXzJxfAyrEBnyOQLGcNSDrtyjRqNavnRLJYDJPMolpwxjxvLBqgcxHfDNBqikbSNzYWhsJjItvXetOOqVSgNlqiUyHuuKRoyxiCJuUddzfkaJajgRXILqsxPHBcagyaZldBggcRtcSqLNbrqUsQqRAxzdZPzpwVglSyhcMBmJatUxNIZlsqRBsBfvFzFRzJauycIrmoTdejQrbvWiVxiDZUJAyhJxPTXMLvcZo";
+    std::string myString = "ybszxGqgpvFtBfmfASIpCbLjutxSUugiybfPhslokcykwlZlhFkVLhiObiooCkvdMNXAYSyUiXNMasdrfJKbPKeFukZqIrwBtnygCoYnstkqMJMohuMhIKHkYcTaXzwrehdhalfhYKaRCCIQDeqinXCVtbagyIrMLYMqgrKdloqtyLsHPUBQWqIwCfcHmKISTXepiXvw";
     while (std::getline(file, str))
     {
         if (str.size() > 0)
@@ -257,12 +257,15 @@ int main(int argc, char **argv)
 
     std::vector<uint32_t> shingleHashesSeq1(nHashes);
     std::vector<uint32_t> shingleHashesSeq2(nHashes);
-    searchStrategy.generateShinglesMultipleHashPipelineTurbo<5>(myString, nHashes, shingleHashesSeq1, randomHashFuncs);
+    searchStrategy.generateShinglesMultipleHashPipelineTurbo<3>(myString, nHashes, shingleHashesSeq1, randomHashFuncs);
 
     for (int i = 0; i < strings.size(); i++)
     {
-        searchStrategy.generateShinglesMultipleHashPipelineTurbo<5>(strings[i], nHashes, shingleHashesSeq2, randomHashFuncs);
-        double temp = searchStrategy.JaccardSingleHashFast(shingleHashesSeq1, shingleHashesSeq2, 0.8);
+
+        searchStrategy.generateShinglesMultipleHashPipelineTurbo<3>(strings[i], nHashes, shingleHashesSeq2, randomHashFuncs);
+        double temp = searchStrategy.JaccardSingleHashFast(shingleHashesSeq1, shingleHashesSeq2, 0.5);
+
+        std::cout << i << std::endl;
 
         if (temp > maxScore)
         {
@@ -295,8 +298,8 @@ int main(int argc, char **argv)
 
     auto t29 = std::chrono::high_resolution_clock::now();
 
-    uint32_t rows = 10;
-    uint32_t bands = 20;
+    uint32_t rows = 4;
+    uint32_t bands = 50;
 
     struct LSH {
         std::vector<tsl::robin_map<uint32_t, std::string*>> bands;
@@ -311,12 +314,10 @@ int main(int argc, char **argv)
     std::vector<uint32_t> bandHashes(bands);
     std::vector<uint32_t> shingleHashes(nHashes);
 
-
-
     // For each string
     for (int i = 0; i < strings.size(); i++)
     {
-        searchStrategy.generateShinglesMultipleHashPipelineTurbo<5>(strings[i], nHashes, shingleHashes, randomHashFuncs);
+        searchStrategy.generateShinglesMultipleHashPipelineTurbo<3>(strings[i], nHashes, shingleHashes, randomHashFuncs);
         searchStrategy.generateBands(shingleHashes, rows, bands, bandHashes);
 
         for (int j = 0; j < bands; j++)
@@ -347,7 +348,7 @@ int main(int argc, char **argv)
     auto t31 = std::chrono::high_resolution_clock::now();
 
     std::vector<uint32_t> myStringHashes; myStringHashes.resize(nHashes);
-    searchStrategy.generateShinglesMultipleHashPipelineTurbo<5>(myString, nHashes, myStringHashes, randomHashFuncs);
+    searchStrategy.generateShinglesMultipleHashPipelineTurbo<3>(myString, nHashes, myStringHashes, randomHashFuncs);
 
     std::vector<uint32_t> myStringBands; myStringBands.resize(bands);
     searchStrategy.generateBands(myStringHashes, rows, bands, myStringBands);
@@ -359,15 +360,15 @@ int main(int argc, char **argv)
         if (lsh.bands[i].count(myStringBands[i]) > 0)
         {
             // We have a match so find it and record similarity
-            std::cout << "FOUND A MATCH" << std::endl;
+            //std::cout << "FOUND A MATCH" << std::endl;
             std::string foundStr = *lsh.bands[i].at(myStringBands[i]);
 
-            searchStrategy.generateShinglesMultipleHashPipelineTurbo<5>(foundStr, nHashes, foundStrHashes, randomHashFuncs);
+            searchStrategy.generateShinglesMultipleHashPipelineTurbo<3>(foundStr, nHashes, foundStrHashes, randomHashFuncs);
 
-            double temp = searchStrategy.JaccardSingleHashFast(myStringHashes, foundStrHashes, 0.8);
+            double temp = searchStrategy.JaccardSingleHashFast(myStringHashes, foundStrHashes, 0.5);
 
-            std::cout << lsh.bands[i].count(myStringBands[i]) << std::endl;
-            std::cout << temp << std::endl;
+            //std::cout << lsh.bands[i].count(myStringBands[i]) << std::endl;
+            //std::cout << temp << std::endl;
 
             if (temp > maxScore)
             {
@@ -384,7 +385,6 @@ int main(int argc, char **argv)
     std::cout << "# Find Most Similar: " << std::endl;
     std::cout << "Most Similar String: " << finalFoundStr << std::endl;
     std::cout << "Time Taken: " << duration << " microseconds" << std::endl;
-
 
 
 

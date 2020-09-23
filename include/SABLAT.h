@@ -69,7 +69,7 @@ private:
 
         // For smaller sequences use non-overlapping k-mers quadratically
         // Whereas for larger sequences use a suffix tree to perform pattern matching
-        if (Seq1.size() + Seq2.size() < 100)
+        if (Seq1.size() + Seq2.size() < 200)
         {
             // Find initial word matches using non-overlapping k-mers
             // TODO: Remove score concept and replace with purely full matches

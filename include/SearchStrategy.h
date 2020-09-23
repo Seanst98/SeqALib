@@ -2,6 +2,8 @@
 #include <algorithm>
 #include <unordered_set>
 #include <random>
+#include <execution>
+#include <thread>
 
 template <typename ContainerType, typename Ty = typename ContainerType::value_type, Ty Blank = Ty(0), typename MatchFnTy = std::function<bool(Ty, Ty)>>
 class SearchStrategy
@@ -45,41 +47,6 @@ public:
         return hash;
     }
 
-    template<uint32_t K>
-    std::vector<uint32_t> generateShinglesSingleHashPipeline(const ContainerType &Seq)
-    {
-        uint32_t pipeline[K] = { 0 };
-        int len = Seq.size();
-        std::vector<uint32_t> ret(len);
-
-        for (int i = 0; i < len; i++)
-        {
-
-            for (int k = 0; k < K; k++)
-            {
-                pipeline[k] ^= Seq[i];
-                pipeline[k] *= 1099511628211;
-            }
-
-            //Collect head of pipeline
-            ret[i] = pipeline[0];
-
-            //Shift pipeline
-            for (int k = 0; k < K - 1; k++)
-            {
-                pipeline[k] = pipeline[k + 1];
-            }
-            pipeline[K - 1] = 2166136261;
-        }
-
-        std::partial_sort(ret.begin(), ret.begin() + 200, ret.end());
-        auto first = ret.begin();
-        auto last = ret.begin() + 200;
-
-        std::vector<uint32_t> newVec(first, last);
-
-        return newVec;
-    }
 
     template<uint32_t K>
     std::vector<uint32_t>& generateShinglesSingleHashPipelineTurbo(const ContainerType &Seq, uint32_t nHashes, std::vector<uint32_t> &ret)
@@ -137,7 +104,7 @@ public:
         return ret;
     }
 
-    template<uint32_t K>
+    /*template<uint32_t K>
     std::vector<uint32_t>& generateShinglesMultipleHashPipelineTurbo(const ContainerType& Seq, uint32_t nHashes, std::vector<uint32_t>& ret, std::vector<uint32_t>& ranHash)
     {
         uint32_t pipeline[K] = { 0 };
@@ -200,6 +167,100 @@ public:
         std::sort(ret.begin(), ret.end());
 
         return ret;
+    }*/
+
+    template<uint32_t K>
+    std::vector<uint32_t>& generateShinglesMultipleHashPipelineTurbo(const ContainerType& Seq, uint32_t nHashes, std::vector<uint32_t>& ret, std::vector<uint32_t>& ranHash)
+    {
+        uint32_t pipeline[K] = { 0 };
+        int len = Seq.size();
+
+        uint32_t smallest = std::numeric_limits<uint32_t>::max();
+
+        std::vector<uint32_t> shingleHashes(len);
+
+        // Pipeline to hash all shingles using fnv1a
+        // Store all hashes
+        // While storing smallest
+        // Then for each shingle hash, rehash with an XOR of 32 bit random number and store smallest
+        // Do this nHashes-1 times to obtain nHashes minHashes quickly
+        // Sort the hashes at the end
+
+        for (int i = 0; i < len; i++)
+        {
+            for (int k = 0; k < K; k++)
+            {
+                pipeline[k] ^= Seq[i];
+                pipeline[k] *= 1099511628211;
+            }
+
+            //Collect head of pipeline
+            if (pipeline[0] < smallest)
+            {
+                smallest = pipeline[0];
+            }
+            shingleHashes[i] = pipeline[0];
+
+            //Shift pipeline
+            for (int k = 0; k < K - 1; k++)
+            {
+                pipeline[k] = pipeline[k + 1];
+            }
+            pipeline[K - 1] = 2166136261;
+        }
+
+        ret[0] = smallest;
+
+        // Now for each hash function, rehash each shingle and store the smallest each time
+        // BUT THIS TIME USING THREADS OOOOOOO
+
+        constexpr size_t numThreads = 5;
+        constexpr size_t dataChunk = 200 / numThreads;
+        constexpr size_t size = numThreads * dataChunk;
+
+
+        // Declare thread pool
+        std::thread* pool[numThreads];
+
+        // Declare each threads entry function
+        auto findSmallestXor = [&](size_t offset) -> void {
+            //For this threads set of hashes
+            std::vector<uint32_t> newHashes = shingleHashes;
+            for (size_t i = offset; i < offset + dataChunk; ++i)
+            {
+                for (int j = 0; j < newHashes.size(); j++)
+                {
+                    newHashes[j] = shingleHashes[j] ^ ranHash[i];
+                }
+
+                //std::cout << i << std::endl;
+
+                auto min = std::min_element(newHashes.begin(), newHashes.end());
+                ret[i + 1] = newHashes[min - newHashes.begin()];
+                //std::cout << ret[i + 1] << std::endl;
+            }
+        };
+
+        // Spawn all threads, passing (i * dataChunk) as first parameter
+        for (int i = 0; i < numThreads; ++i) {
+            pool[i] = new std::thread(findSmallestXor, i * dataChunk);
+        }
+
+        // Wait for all threads to finish execution and delete them
+        for (int i = 0; i < numThreads; ++i) {
+            pool[i]->join();
+            delete pool[i];
+        }
+
+        // Print results
+        /*for (int i = 0; i < size; ++i) {
+            std::cout << ret[i] << "\n";
+        }*/
+
+
+        std::sort(ret.begin(), ret.end());
+
+        return ret;
     }
 
     constexpr std::vector<uint32_t>& generateRandomHashFunctions(int num, std::vector<uint32_t>& ret)
@@ -232,7 +293,83 @@ public:
         return lsh;
     }
 
-    template<uint32_t K>
+    double JaccardSingleHashFast(const std::vector<uint32_t> &seq1, const std::vector<uint32_t> &seq2, double alpha)
+    {
+        int len1 = seq1.size();
+        int len2 = seq2.size();
+        int nintersect = 0;
+        int pos1 = 0;
+        int pos2 = 0;
+        int s = 0;
+
+        const int smax = (int)std::ceil((1.0 - alpha) / (1.0 + alpha) * (len1 + len2));
+
+        while (pos1 < len1 && pos2 < len2)
+        {
+            if (seq1[pos1] == seq2[pos2])
+            {
+                nintersect++;
+                pos1++;
+                pos2++;
+            }
+            else if (seq1[pos1] < seq2[pos2])
+            {
+                pos1++;
+                s++;
+            }
+            else {
+                pos2++;
+                s++;
+            }
+
+            if (s > smax)
+            {
+                return 0.0;
+            }
+        }
+
+        int nunion = len1 + len2 - nintersect;
+        return nintersect / (double)nunion;
+    }
+
+
+    /*template<uint32_t K>
+    std::vector<uint32_t> generateShinglesSingleHashPipeline(const ContainerType &Seq)
+    {
+        uint32_t pipeline[K] = { 0 };
+        int len = Seq.size();
+        std::vector<uint32_t> ret(len);
+
+        for (int i = 0; i < len; i++)
+        {
+
+            for (int k = 0; k < K; k++)
+            {
+                pipeline[k] ^= Seq[i];
+                pipeline[k] *= 1099511628211;
+            }
+
+            //Collect head of pipeline
+            ret[i] = pipeline[0];
+
+            //Shift pipeline
+            for (int k = 0; k < K - 1; k++)
+            {
+                pipeline[k] = pipeline[k + 1];
+            }
+            pipeline[K - 1] = 2166136261;
+        }
+
+        std::partial_sort(ret.begin(), ret.begin() + 200, ret.end());
+        auto first = ret.begin();
+        auto last = ret.begin() + 200;
+
+        std::vector<uint32_t> newVec(first, last);
+
+        return newVec;
+    }*/
+
+    /*template<uint32_t K>
     std::vector<uint32_t> generateShinglesSingleHashPipelinePrem(ContainerType Seq)
     {
         uint32_t pipeline[K] = { 0 };
@@ -332,45 +469,6 @@ public:
 
         int nunion = len1 + len2 - nintersect;
         return nintersect / (double)nunion;
-    }
-
-    double JaccardSingleHashFast(const std::vector<uint32_t> &seq1, const std::vector<uint32_t> &seq2, double alpha)
-    {
-        int len1 = seq1.size();
-        int len2 = seq2.size();
-        int nintersect = 0;
-        int pos1 = 0;
-        int pos2 = 0;
-        int s = 0;
-
-        const int smax = (int)std::ceil((1.0 - alpha) / (1.0 + alpha) * (len1 + len2));
-
-        while (pos1 < len1 && pos2 < len2)
-        {
-            if (seq1[pos1] == seq2[pos2])
-            {
-                nintersect++;
-                pos1++;
-                pos2++;
-            }
-            else if (seq1[pos1] < seq2[pos2])
-            {
-                pos1++;
-                s++;
-            }
-            else {
-                pos2++;
-                s++;
-            }
-
-            if (s > smax)
-            {
-                return 0.0;
-            }
-        }
-
-        int nunion = len1 + len2 - nintersect;
-        return nintersect / (double)nunion;
-    }
+    }*/
 
 };
